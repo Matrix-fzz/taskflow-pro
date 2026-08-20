@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen" class="auth-wrapper">
+        <div class="auth-card glass-panel">
+            <div class="brand-logo">
+                <i class="fas fa-layer-group"></i> TaskFlow Pro
+            </div>
+            <p class="auth-subtitle">Gestion de projet collaborative</p>
+            
+            <!-- Login -->
+            <div id="login-box">
+                <form id="login-form">
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="login-email" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="login-pass" placeholder="Mot de passe" required>
+                    </div>
+                    <button type="submit" class="btn-primary full-width">Connexion</button>
+                </form>
+                <p class="switch-auth">Pas de compte ? <a onclick="toggleAuth()">Créer un compte</a></p>
+            </div>
+
+            <!-- Signup -->
+            <div id="signup-box" style="display: none;">
+                <form id="signup-form">
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="reg-username" placeholder="Nom d'utilisateur" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="reg-email" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="reg-pass" placeholder="Mot de passe" required>
+                    </div>
+                    <!-- Role removed: Public signup defaults to Chef -->
+                    <button type="submit" class="btn-primary full-width">S'inscrire (Chef)</button>
+                </form>
+                <p class="switch-auth">Déjà inscrit ? <a onclick="toggleAuth()">Connexion</a></p>
+            </div>
+            <div id="auth-msg" style="color: #ef4444; margin-top: 10px; font-size: 0.9rem;"></div>
+        </div>
+    </div>
+
+    <!-- APP SCREEN -->
+    <div id="app-screen" class="app-layout" style="display: none;">
+        
+        <!-- SIDEBAR -->
+        <aside class="sidebar glass-panel">
+            <div class="brand">
+                <i class="fas fa-layer-group"></i> TaskFlow
+            </div>
+            
+            <nav class="nav-menu">
+                <a onclick="switchView('dashboard', this)" class="nav-item active">
+                    <i class="fas fa-chart-pie"></i> Tableau de bord
+                </a>
+                <a onclick="switchView('projects', this)" class="nav-item">
+                    <i class="fas fa-folder"></i> Projets
+                </a>
+                <a onclick="switchView('tasks', this)" class="nav-item">
+                    <i class="fas fa-tasks"></i> Mes Tâches
+                </a>
+                <a onclick="switchView('team', this)" class="nav-item">
+                    <i class="fas fa-users"></i> Équipe
+                </a>
+                <!-- New: User Management (Chef Only) -->
+                <a id="nav-users-manage" onclick="switchView('users-manage', this)" class="nav-item" style="display: none;">
+                    <i class="fas fa-user-cog"></i> Gestion Membres
+                </a>
+            </nav>
+
+            <div class="user-profile">
+                <div class="user-info">
+                    <div class="user-name" id="username-display">User</div>
+                    <div class="user-role" id="role-display">Role</div>
+                </div>
+                <button onclick="logout()" class="btn-icon"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            
+            <!-- VIEW: DASHBOARD -->
+            <section id="view-dashboard" class="view-section">
+                <header class="top-bar">
+                    <h1>Tableau de bord</h1>
+                    <button id="btn-create-project" onclick="openModal('project-modal')" class="btn-primary">
+                        <i class="fas fa-plus"></i> Nouveau Projet
+                    </button>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel">
+                        <h3>Projets Actifs</h3>
+                        <div class="value" id="total-projects">0</div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <h3>Tâches Terminées</h3>
+                        <div class="value" id="total-done">0</div>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <h3>En Cours</h3>
+                        <div class="value" id="total-progress">0</div>
+                    </div>
+                </div>
+
+                <div id="projects-container" class="projects-grid">
+                    <!-- Projects rendered here -->
+                </div>
+            </section>
+
+            <!-- VIEW: PROJECTS LIST -->
+            <section id="view-projects" class="view-section" style="display: none;">
+                <header class="top-bar"><h1>Tous les Projets</h1></header>
+                <div class="glass-panel table-container">
+                    <table id="projects-table">
+                        <thead><tr><th>Projet</th><th>Créateur</th><th>Membres</th><th>Actions</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VIEW: MY TASKS -->
+            <section id="view-tasks" class="view-section" style="display: none;">
+                <header class="top-bar"><h1>Mes Tâches</h1></header>
+                <div class="glass-panel table-container">
+                    <table id="mytasks-table">
+                        <thead><tr><th>Tâche</th><th>Projet</th><th>Statut</th><th>Actions</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VIEW: TEAM -->
+            <section id="view-team" class="view-section" style="display: none;">
+                <header class="top-bar"><h1>Mon Équipe</h1></header>
+                <div id="team-container" class="team-grid"></div>
+            </section>
+
+            <!-- VIEW: USER MANAGEMENT (CHIEF ONLY) -->
+            <section id="view-users-manage" class="view-section" style="display: none;">
+                <header class="top-bar">
+                    <h1>Gestion des Membres</h1>
+                    <button onclick="openModal('create-user-modal')" class="btn-primary">
+                        <i class="fas fa-user-plus"></i> Ajouter un Membre
+                    </button>
+                </header>
+                <div class="glass-panel table-container">
+                    <table id="users-manage-table">
+                        <thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Actions</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL: CREATE PROJECT -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close" onclick="closeModal('project-modal')">&times;</span>
+            <h2>Nouveau Projet</h2>
+            <form id="project-form">
+                <input type="text" id="project-title" placeholder="Titre du projet" required>
+                <textarea id="project-desc" placeholder="Description" rows="3"></textarea>
+                <button type="submit" class="btn-primary full-width">Créer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT PROJECT -->
+    <div id="edit-project-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close" onclick="closeModal('edit-project-modal')">&times;</span>
+            <h2>Modifier Projet</h2>
+            <form id="edit-project-form">
+                <input type="hidden" id="edit-project-id">
+                <input type="text" id="edit-project-title" placeholder="Titre" required>
+                <textarea id="edit-project-desc" placeholder="Description" rows="3"></textarea>
+                <button type="submit" class="btn-primary full-width">Mettre à jour</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT TASK -->
+    <div id="edit-task-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close" onclick="closeModal('edit-task-modal')">&times;</span>
+            <h2>Modifier Tâche</h2>
+            <form id="edit-task-form">
+                <input type="hidden" id="edit-task-id">
+                <input type="text" id="edit-task-title" placeholder="Titre" required>
+                <select id="edit-task-status">
+                    <option value="TODO">À FAIRE</option>
+                    <option value="IN_PROGRESS">EN COURS</option>
+                    <option value="DONE">TERMINÉ</option>
+                </select>
+                <label style="display:block;margin-top:10px;font-size:0.9rem;">Assigner à :</label>
+                <select id="edit-task-assign" style="width:100%;margin-bottom:15px;"></select>
+                <button type="submit" class="btn-primary full-width">Mettre à jour</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE USER (CHIEF) -->
+    <div id="create-user-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close" onclick="closeModal('create-user-modal')">&times;</span>
+            <h2>Ajouter un Membre</h2>
+            <form id="create-user-form">
+                <input type="text" id="new-user-name" placeholder="Nom d'utilisateur" required>
+                <input type="email" id="new-user-email" placeholder="Email" required>
+                <input type="password" id="new-user-pass" placeholder="Mot de passe" required>
+                <select id="new-user-role">
+                    <option value="member">Membre</option>
+                    <option value="chef">Chef de Projet</option>
+                </select>
+                <button type="submit" class="btn-primary full-width">Créer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT USER (CHIEF) -->
+    <div id="edit-user-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <span class="close" onclick="closeModal('edit-user-modal')">&times;</span>
+            <h2>Modifier Utilisateur</h2>
+            <form id="edit-user-form">
+                <input type="hidden" id="edit-user-id">
+                <input type="text" id="edit-user-name" placeholder="Nom d'utilisateur" required>
+                <input type="email" id="edit-user-email" placeholder="Email" required>
+                <select id="edit-user-role">
+                    <option value="member">Membre</option>
+                    <option value="chef">Chef de Projet</option>
+                </select>
+                <input type="password" id="edit-user-pass" placeholder="Nouveau mot de passe (optionnel)">
+                <button type="submit" class="btn-primary full-width">Mettre à jour</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast">Notification</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
